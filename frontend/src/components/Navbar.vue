@@ -42,6 +42,7 @@
     <div class="jumbotron jumbotron-fluid">
   <div class="container">
     <h1 class="display-2">FOODGET</h1>
+    <router-link class="btn btn-info my-2 my-sm-0 mr-2" to="/dodavanjerecepata">Dodaj recept</router-link>
     
      <router-link v-if="!authenticated" class="btn btn-info my-2 my-sm-0 mr-2 btn-lg" to="/prijava">Prijava</router-link> 
                  <span v-if="authenticated"> 

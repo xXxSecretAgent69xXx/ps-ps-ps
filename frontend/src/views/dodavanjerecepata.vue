@@ -5,7 +5,7 @@
 <h1>DODAVANJE RECEPATA</h1>
     <h2>Dodaj novi recept</h2>
     
-   
+<h4 class="error">{{error}}</h4>  
 <div>
 <div class="modal-header">
               
@@ -23,34 +23,33 @@
 
                   <div class="col-md-4">
                     <div class="form-group">
-                      <input type="text" placeholder="Naziv recepta"  class="form-control">
+                      <input v-model="body.naziv" type="text" placeholder="Naziv recepta"  class="form-control">
                     </div>
 
                     <div class="form-group ">
-                      <input type="text" placeholder="Opis recepta"  class="form-control">
+                      <input v-model="body.opis" type="text" placeholder="Opis recepta"  class="form-control">
                     </div>
 
                     <div class="form-group">
-                      <input type="text" placeholder="Vrijeme pripreme"  class="form-control">
+                      <input v-model="body.vrijemePripreme" type="text" placeholder="Vrijeme pripreme"  class="form-control">
                     </div>
 
                     <div class="form-group">
-                      <input type="text" placeholder="Sastojci za pripremu"  class="form-control">
+                      <input v-model="sastojci" type="text" placeholder="Sastojci za pripremu"  class="form-control">
                     </div>
 
                     <div class="form-group">
-                      <input type="text" placeholder="Način pripreme"  class="form-control">
+                      <textarea v-model="body.priprema" type="text" placeholder="Način pripreme"  class="form-control priprema" />
                     </div>
             <!-- ZASAD SAMO URL  -->
                     <form @submit.prevent="postNewImage" class="form-inline mb-5">   
             <div class="form-group">    
-                <label for="imageUrl">Image URL</label>     
-                 <input v-model="newImageUrl" type="text" class="form-control ml-2" id="imageUrl" placeholder="Enter the image URL">  
+                <label for="imageUrl">Select image </label>     
+                 <input type="file" id="file" ref="file" v-on:change="OcitajSliku()"/>
            </div>    
-           <button type="submit" class="btn btn-primary ml-2">Post image</button> 
             </form> 
                     <div>
-                      <a class="btn btn-info my-2 my-sm-0 mr-2">Dodaj</a>
+                      <a @click="DodajRecept()" class="btn btn-info my-2 my-sm-0 mr-2">Dodaj</a>
                     </div>
                   </div>
                   
@@ -80,21 +79,53 @@
 
 import karticerecepata from '@/components/karticerecepata.vue'
 import store from '@/store.js'
+import Recept from '../services/recept'
 export default {
   name:"recepti",
   components: {
     karticerecepata
   },
   data(){
-    return store;
+    return{
+      body:{
+        naziv: '',
+        priprema: '',
+        vrijemePripreme: '',
+        sastojci: [],
+        opis: ''
+      },
+      sastojci: '',
+      error: '',
+      slika: {}
+    }
   },
-  methods: {    postNewImage() {  
-           db.collection("posts").add({      
-         url: this.newImageUrl,      
-           email: this.email,   
-                posted_at: Date.now()  
-                   })  
-                    console.log("uspjesnoste dodali sliku") }  }
+  methods: {
+    async DodajRecept(){
+      this.error = ''
+      this.body.sastojci = this.sastojci.split(',').map((sastojak) =>{
+        return {sastojak}
+      })
+      try {
+        let form = new FormData()
+        form.append('slika', this.slika)
+
+        let res = await Recept.Objavi(this.body)
+        // this.body = {}
+        console.log("rer", this.slika);
+        console.log(res.data._id);
+        let res2 = await Recept.ObjaviSliku(res.data._id, form)
+        console.log("slika bokte", res2);
+      } catch (error) {
+        this.error = error.data.error
+        console.log(error);
+      }
+    },
+    OcitajSliku(){
+      console.log(this.$refs.file.files[0]);
+      this.slika = this.$refs.file.files[0];
+    }
+  },
+ 
 }
 </script>
 
@@ -134,6 +165,14 @@ export default {
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.priprema{
+  height: 200px;
+}
+
+.error{
+  color: red;
 }
 </style>
 

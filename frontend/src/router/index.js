@@ -28,6 +28,14 @@ Vue.use(VueRouter)
     component: () => import(/* webpackChunkName: "about" */ '../views/recepti.vue')
   },
   {
+    path: '/recept/:id',
+    name: 'receptPodaci',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/receptPodaci.vue')
+  },
+  {
     path: '/dodavanjerecepata',
     name: 'dodavanjerecepata',
     // route level code-splitting
@@ -42,6 +50,14 @@ Vue.use(VueRouter)
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/forum.vue')
+  },
+  {
+    path: '/forum/objava/:id',
+    name: 'objavaPodaci',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/objava.vue')
   },
   {
     path: '/onama',

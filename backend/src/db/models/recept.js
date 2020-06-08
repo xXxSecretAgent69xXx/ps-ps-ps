@@ -14,13 +14,19 @@ const ReceptShema = new mongoose.Schema({
         required: [true, 'Unesite način pripreme'],
         minlength: 4, 
     },
+    opis: {
+        type: String,
+        required: [true, 'Unesite opis recepta'],
+        minlength: 4, 
+    },
    vrijemePripreme: {
        type: String,
        required: [true, 'Unesiite vrijeme pripreme'],
    },
    sastojci: [{
        sastojak: {
-           type: String
+           type: String,
+           trim: true
        }
    }],
    slika: {

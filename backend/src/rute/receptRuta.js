@@ -12,7 +12,7 @@ const upload = multer({
         fileSize: 1000000
     },
     fileFilter(req, file, cb) {
-        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|JPG|JPEG|PNG)$/)) {
             return cb(new Error('Učitajte sliku'))
         }
 
@@ -27,7 +27,22 @@ var ReceptRuta = new express.Router()
 //ruta koja sprema u bazu, "/api" je jer ako u produkciji budes imao i Vue koji ima "/recept" da ne baca error
 //npr u Vue "/recept" otvara html recept, a na backu "/recept" geta sve recepte. Nece znati sto treba, zato cijeli backend ima "prefix" api
 //upload.single() je middleware koji ucitava sliku (multer)
-ReceptRuta.post('/api/recept', upload.single('slika'), async (req, res) =>{
+ReceptRuta.post('/api/recept', async (req, res) =>{
+       
+    //stvara novi recept sa varijablama sve iz bodija (...req.body) i sliku iz prijasnjeg if-a
+    var recept = new Recept({
+        ...req.body,
+    })
+    try {
+        //pokusava spremit, ako uspije posalje sto je spremio
+        await recept.save()
+        res.status(200).send(recept)
+    } catch (error) {
+        //a ako postoji error vrati ti taj error
+        res.status(500).send({error: error.message})
+    }
+})
+ReceptRuta.post('/api/recept/:id/slika', upload.single('slika'), async (req, res) =>{
     var slika
     //provjerava da li je slika uploadana, straight foward je 
     if(req.file === undefined) {
@@ -35,13 +50,14 @@ ReceptRuta.post('/api/recept', upload.single('slika'), async (req, res) =>{
     } else{
         slika = req.file.buffer
     }
-    //stvara novi recept sa varijablama sve iz bodija (...req.body) i sliku iz prijasnjeg if-a
-    var recept = new Recept({
-        ...req.body,
-        slika
-    })
+
     try {
-        //pokusava spremit, ako uspije posalje sto je spremio
+        console.log("dasdasdadsd");
+        const recept = await Recept.findById(req.params.id)
+        if(!recept){
+            return res.status(404).send({error: "Recept ne postoji"})
+        }
+        recept.slika = slika
         await recept.save()
         res.status(200).send(recept)
     } catch (error) {
@@ -64,7 +80,7 @@ ReceptRuta.get('/api/recept', async (req, res) =>{
     try {
         //pokusava dohvatit sve po tome
         var recepti = await Recept.find(match, null);
-        if(recepti.length === 0) return res.send("Nema recepata sa tim nazivom")
+        if(recepti.length === 0) return res.status(404).send("Nema recepata")
         res.send({recepti})
     } catch (error) {
         res.status(500).send(error)
@@ -77,7 +93,7 @@ ReceptRuta.get('/api/recept/:id/slika', async (req, res) => {
         const recept = await Recept.findById(req.params.id)
 
         if (!recept || !recept.slika) {
-            throw new Error()
+            throw new Error("error sa slikom")
         }
 
         res.set('Content-Type', 'image/jpg')
@@ -117,16 +133,17 @@ ReceptRuta.get('/api/recept/:id/komentari', async (req, res) =>{
 
 //updatejt jednog recepta
 ReceptRuta.patch('/api/recept/:id', async (req, res) =>{
+    console.log("patch", req.body);
     //ukratko gleda dali si u bodiju prosljedio dozvoljene varijable
     //isto lakse uzivo objasnit
     const updates = Object.keys(req.body)
 
-    const dozvoljenePromjene = ["naziv", "sastojci", "priprema", "vrijemePripreme"];
+    const dozvoljenePromjene = ["naziv", "opis", "sastojci", "priprema", "vrijemePripreme"];
     const smijeLiSePromjeniti = updates.every((promjena) =>{
         return dozvoljenePromjene.includes(promjena)
     })
     if(!smijeLiSePromjeniti){
-        return res.status(400).send()
+        return res.status(400)
     }
     try {
         //pokusava pronaci taj recept, updejtat mu sve varijable i spremiti

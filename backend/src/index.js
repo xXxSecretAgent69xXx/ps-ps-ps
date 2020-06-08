@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 require('./db/baza')
 
 //importanje ruta jer sam razvodjio da ne bude sve u jednom fileu da se laske snaci
@@ -13,6 +14,7 @@ const app  = express()
 //definiranje porta
 const port = process.env.PORT || 3000;
 
+app.use(cors())
 app.use(express.json())
 
 //koristenje gore importanih ruta

@@ -2,12 +2,6 @@ const mongoose = require('mongoose');
 
 
 const ForumObjavaShema = new mongoose.Schema({
-    naslov:{
-        type: String,
-        required: [true, 'Unesite naslov objave'],
-        trim: true,
-        minlength: 5,
-    },
     sadrzaj:{
         type: String,
         required: [true, 'Unesite sadržaj objave'],

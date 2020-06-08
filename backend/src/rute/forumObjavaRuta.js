@@ -40,7 +40,8 @@ ForumObjavaRuta.get('/api/forum', async (req, res) =>{
     try {
         //pokusava dohvatit sve po tome
         var objave = await ForumObjava.find(match, null);
-        if(objave.length === 0) return res.send("Nema objava na forumu")
+        console.log(objave);
+        if(objave.length === 0) return res.status(404).send("Nema objava")
         res.send({objave})
     } catch (error) {
         res.status(500).send(error)
@@ -67,8 +68,8 @@ ForumObjavaRuta.get('/api/forum/objava/:id/komentari', async (req, res) =>{
     const _id = req.params.id;
     try {
         const komentari = await ForumKomentar.find({objava: _id});
-        if(!komentari){
-            return res.status(404).send({error: "Komentar ne postoji"})
+        if(komentari.length === 0){
+            return res.status(404).send({error: "Komentari ne postoje"})
         }
         res.send(komentari)
     } catch (error) {
@@ -82,7 +83,7 @@ ForumObjavaRuta.patch('/api/forum/objava/:id', async (req, res) =>{
     //isto lakse uzivo objasnit
     const updates = Object.keys(req.body)
 
-    const dozvoljenePromjene = ["naslov", "sadrzaj"];
+    const dozvoljenePromjene = ["sadrzaj"];
     const smijeLiSePromjeniti = updates.every((promjena) =>{
         return dozvoljenePromjene.includes(promjena)
     })
