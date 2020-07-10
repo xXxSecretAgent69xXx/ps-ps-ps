@@ -18,9 +18,10 @@ let Recept = {
             throw error.response;
         }
     },
-    async SviRecepti(pretraga){
+    async SviRecepti(pretraga, skip, random){
+        console.log(pretraga);
         try {
-            return await Service.get(`/recept?${pretraga}`)
+            return await Service.get(`/recept?pretraga=${pretraga}&skip=${skip}&random=${random}`)
         } catch (error) {
             throw error.response;
         }
@@ -60,6 +61,13 @@ let Recept = {
             return await Service.delete(`/recept/${id}`)
         } catch (error) {
             throw error.response;
+        }
+    },
+    async UserRecepti(skip){
+        try {
+            return await Service.get(`/me/recepti?skip=${skip}`)
+        } catch (error) {
+            throw error.response
         }
     }
 }

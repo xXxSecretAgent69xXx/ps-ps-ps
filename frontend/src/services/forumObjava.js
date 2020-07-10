@@ -9,9 +9,9 @@ let Forum = {
             throw error.response
         }
     },
-    async SveObjave(){
+    async SveObjave(sadrzaj, stranica){
         try {
-            return await Service.get('/forum')
+            return await Service.get(`/forum?sadrzaj=${sadrzaj}&stranica=${stranica}`)
         } catch (error) {
             throw error.response
         }
@@ -37,6 +37,13 @@ let Forum = {
             throw error.response
         }
     },
+    async mojeObjave(){
+        try {
+            return await Service.get('/me/objave')
+        } catch (error) {
+            throw error.response
+        }
+    }
 }
 
 

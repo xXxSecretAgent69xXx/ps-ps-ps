@@ -1,8 +1,8 @@
 <template>
   <div class="forum">
     <h1>Forum</h1>
-    <h5>Ukoliko zelite sudjelovati u raspravama morate biti prijavljeni</h5> <br>
-    <p class="error">{{error}}</p>
+    <h5 v-if="!$store.user">Ukoliko zelite sudjelovati u raspravama morate biti prijavljeni</h5> <br>
+    <p class="error" v-if="$store.objave.length === 0">{{error}}</p>
     <div class="col-sm">
       <div class="w-80 p-3" style="background-color: #eee;">
             <div class="slikicaprofila"></div>
@@ -16,8 +16,21 @@
 
       </div>
     </div> <br> 
-    <forumkomentari class="objava" v-for="objava in objave" :key="objava._id" :info="objava" /> <br>
-    
+    <forumkomentari class="objava" v-for="objava in $store.objave" :key="objava._id" :info="objava" /> <br>
+
+    <div v-if="$store.recepti.length>0" class="pag">  
+        <nav aria-label="Page navigation example">
+          <ul class="d-flex pagination justify-content-center">
+            <li @click.prevent="prev()" class="page-item">
+              <a class="page-link" href="#">Previous</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">{{stranica+1}}</a></li>
+            <li @click.prevent="next()" class="page-item">
+              <a class="page-link" href="#">Next</a>
+            </li>
+          </ul>
+        </nav> 
+      </div>
     
   </div>
 </template>
@@ -37,7 +50,8 @@ export default {
         sadrzaj: ''
       },
       objave: [],
-      error: ''
+      error: '',
+      stranica: 0
     }
   },
   async created() {
@@ -55,13 +69,22 @@ export default {
     },
     async SveObjave(){
       try {
-        let res = await Forum.SveObjave()
+        let res = await Forum.SveObjave(this.$store.forumPretraga, this.stranica)
         console.log(res);
-        this.objave = res.data.objave
+        this.$store.objave = res.data.objave
       } catch (error) {
+        this.stranica--
         this.error = error.data
       }
-    }
+    },
+    async next(){
+      this.stranica++
+      await this.SveObjave()      
+    },
+    async prev(){
+      this.stranica = --this.stranica < 0 ? 0 : this.stranica
+      await this.SveObjave()
+    },
   },
 }
 </script>
@@ -73,5 +96,9 @@ export default {
 
   .error{
     color: red;
+  }
+
+  .pag{
+    width: 100%;
   }
 </style>

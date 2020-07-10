@@ -1,36 +1,33 @@
  <!--  -->
  
 <template>
-  <div class="recepti">
-<h1>Prikaz dodanih recepata</h1>
-
-   
-    
-  
-
-     
- 
-
-      <div class="row">     
-       
-       <div class="col-4">   
- </div>    
-          
-           
-          
-
-           <div class="col-4">        <karticerecepata v-for="k in kartice" :info="k" :key="k.id" />  </div> 
-           <div class="col-4">       </div> 
-           </div>
-
-           
-     </div>
+  <div class="naslovnica">
+      
+      <div class="row recepti">     
+        <div>
+          <karticerecepata v-on:reload="receptiUsera()" class="recept" v-for="k in recepti" :info="k" :key="k._id" /> 
+        </div>  
+      <div v-if="recepti.length>0" class="pag">  
+        <nav aria-label="Page navigation example">
+          <ul class="d-flex pagination justify-content-center">
+            <li @click.prevent="prev()" class="page-item">
+              <a class="page-link" href="#">Previous</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">{{stranica+1}}</a></li>
+            <li @click.prevent="next()" class="page-item">
+              <a class="page-link" href="#">Next</a>
+            </li>
+          </ul>
+        </nav> 
+      </div>   
+      </div>
+    </div>
   
   
 </template>
 <script>
 
-
+import Recept from '@/services/recept.js'
 import karticerecepata from '@/components/karticerecepata.vue'
 import store from '@/store.js'
 export default {
@@ -39,19 +36,33 @@ export default {
     karticerecepata
   },
   data(){
-    return store ;
-   
-    
+    return{
+      recepti: [],
+      stranica: 0
+    }
+  },
+  async created() {
+    await this.receptiUsera()
   },
   methods:{
-    addNew(){
-        
-       /*  $('#recepti').modal('show'); */
-      },
-    dodaj(){
-      this.recept.push({
-        naziv: this.naziv
-      })
+    async receptiUsera(){
+      try {
+        let res = await Recept.UserRecepti(this.stranica)
+        console.log(res);
+        if(res.data.length===0) return this.stranica--
+        this.recepti = res.data
+      } catch (error) {
+        this.stranica--
+        console.log(error);
+      }
+    },
+    async next(){
+      this.stranica++
+      await this.receptiUsera()      
+    },
+    async prev(){
+      this.stranica = --this.stranica < 0 ? 0 : this.stranica
+      await this.receptiUsera()
     },
      
 
@@ -63,41 +74,37 @@ export default {
 </script>
 
 <style scoped>
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+.recept{
+    margin: 0 300px 0 300px;
+  }
+
+  .recepti{
+    margin-top: 50px !important;
+  }
+
+  .row{
+    margin: 0px;
+  }
+
+  .pag{
+    width: 100%;
+  }
+  .error{
+    color: red
+  }
+  img{
+  height: 90vh;
 }
 
-/* Modal Content/Box */
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
-}
-
-/* The Close Button */
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
+  @media only screen and (max-width: 991px){
+    .recept{
+    margin: 0 10% 0 10%;
+    }
+  }
+  @media only screen and (max-width: 450px){
+    .recept{
+    margin: 0 2% 0 2%;
+    }
+  }
 </style>
 

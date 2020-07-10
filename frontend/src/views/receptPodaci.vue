@@ -5,15 +5,16 @@
     
 <div>
 <div class="modal-header">
-              
-            </div>
+</div>
 
     
 </div>
       <div class="modal-body">
-          <div v-if="pic" class="row">
+          <div class="row">
             <div class="col-md-2 form-group"></div>
-            <div class="col-md-8 form-group"><img :src="url"></div>
+            <div class="col-md-8 form-group">
+            <img :src="url" alt="">
+            </div>
             <div class="col-md-2 form-group"></div>
           </div>
 
@@ -35,14 +36,14 @@
               </div>
 
               <div class="form-group"> Sastojci
-                <input v-model="podaci.sastojci" type="text" placeholder="Sastojci za pripremu"  class="form-control">
+                <textarea v-model="podaci.sastojci" type="text" placeholder="Sastojci za pripremu"  class="form-control"/>
               </div>
 
               <div class="form-group"> Način pripreme
                 <textarea v-model="podaci.priprema" type="text" placeholder="Način pripreme"  class="form-control priprema" />
               </div>
 
-              <div>
+              <div v-if="$route.params.edit == 'recepti'">
                 <a @click.prevent="Update()" class="btn btn-info my-2 my-sm-0 mr-2">Update</a>
               </div>
             </div>
@@ -50,8 +51,7 @@
             <div class="col-md-4"></div>
           </div>
           <br><br><br><br>
-
-          <div class="row">
+          <div v-if="$store.user && $route.params.edit != 'recepti'" class="row">
             <div class="col-md-2"></div>
 
             <div class="col-md-8">
@@ -67,24 +67,30 @@
             <div class="col-md-2"></div>
           </div>
           <br><br>
+
+
           <div class="row">
             <div class="col-md-2"></div>
             
             <div class="col-md-8">
               <h3>Komentari</h3>
-              <div v-for="komentar in komentari" :key="komentar._id">
+              <div class="v-for-komentari" v-for="komentar in komentari" :key="komentar._id">
                 <p class="alert alert-secondary jedanKom" >
                   {{komentar.sadrzaj}}
-                  <button @click.prevent="ObrisiKomentar(komentar._id)" class="btn btn-danger obrisi">Obriši</button>
                 </p>
-                
-              </div>
-              
-              
+                <p class="date">{{new Date(komentar.createdAt).getDate()}}.{{new Date(komentar.createdAt).getMonth()}}.
+                  {{new Date(komentar.createdAt).getFullYear()}} {{new Date(komentar.createdAt).getHours()}}:{{new Date(komentar.createdAt).getMinutes()}}</p>
+                <p v-if="komentar.korisnik == $store.user" @click.prevent="ObrisiKomentar(komentar._id)" class="obrisi">Obrisi</p>
+                <i class="pseudo"></i>
+              </div> 
+                                         
             </div>
-
             <div class="col-md-2"></div>
           </div>
+          
+
+          
+          
 
       </div>
  
@@ -100,6 +106,7 @@
 import Recept from '../services/recept'
 import ReceptKomentar from '../services/receptKomentar'
 export default {
+  name: 'receptPodaci',
   data(){
     return{
       podaci: {},
@@ -111,10 +118,12 @@ export default {
         sadrzaj: '',
         recept: ''
       },
-      komentari: []
+      komentari: [],
+      slike: []
     }
   },
   async created() {
+    console.log(this.$route.params.edit);
     await this.getRecept()
     await this.getKomentari()
   },
@@ -133,15 +142,17 @@ export default {
       try {
         let res = await Recept.UpdateRecept(this.$route.params.id, noviPodaci)
         console.log(res);
+        this.$router.push({name: 'recepti'})
       } catch (error) {
         this.receptEerror = error.data
       }
     },
     async PostKomentar(){
+      this.komentarError = ''
       this.komentar.recept = this.$route.params.id
       try {
         let res = await ReceptKomentar.ObjaviKomentar(this.komentar)
-        this.komentar = ''
+        this.komentar.sadrzaj = ''
         await this.getKomentari()
       } catch (error) {
         this.komentarError = error.data.error
@@ -150,10 +161,16 @@ export default {
     async getRecept(){
       try {
         let res = await Recept.JedanRecept(this.$route.params.id)
-        let slika = await Recept.ReceptSlika(this.$route.params.id)
-        if(slika.data.size !== 0) this.pic = true
-        this.url = `${slika.config.baseURL}/recept/${this.$route.params.id}/slika`
         this.podaci = res.data
+        let podacioSlici = await Recept.ReceptSlika(this.$route.params.id)
+        console.log(podacioSlici);
+        this.url= `${podacioSlici.config.baseURL}${podacioSlici.config.url}`
+
+        
+        // if(slika.data.size !== 0) this.pic = true
+        // this.url = `${slika.config.baseURL}/recept/${this.$route.params.id}/slika`
+
+
         this.podaci.sastojci = res.data.sastojci.map((sastojak) =>{
           return sastojak.sastojak
         }).join(',')
@@ -199,13 +216,60 @@ img{
 }
 
 .jedanKom{
-    position: relative;
+  font-size: 28px;
+  justify-self: start;
+  background-color: white;
+  border: 0px !important;
+  word-wrap: break-word;
 }
 
 .obrisi{
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    margin: 0 5px 5px 0;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: white;
+  border: 0px !important;
+  justify-self: start;
+  align-self: center;
+  cursor: pointer;
+  padding: 0 10px 0 5px;
+  font-style: oblique;
+  border-radius: 0 0 .25rem 0;
+  z-index: 100;
+}
+
+.v-for-komentari{
+  display: grid;
+  grid-template-columns: 10fr;
+  margin: 10px 0;
+}
+
+p{
+  margin-block-start: 0 !important;
+  margin-block-end: 0 !important;
+  margin: 0 !important;
+}
+
+.alert{
+  border-radius: .25rem .25rem .25rem 0;
+}
+
+.pseudo{
+  background-color: transparent;
+  width: 10px;
+  height: 15px;
+  border-radius: 12px 0 0 0;
+  box-shadow: 0 -9px 0 0 white;
+  z-index: 10;
+}
+
+.date{
+  font-size: 16px;
+  font-weight: 500;
+  background-color: white;
+  border: 0px !important;
+  justify-self: start;
+  padding: 0 10px 0 5px;
+  border-radius: 0 0 .25rem 0;
+  z-index: 100;
 }
 </style>

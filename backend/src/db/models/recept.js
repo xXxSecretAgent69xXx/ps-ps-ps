@@ -23,6 +23,11 @@ const ReceptShema = new mongoose.Schema({
        type: String,
        required: [true, 'Unesiite vrijeme pripreme'],
    },
+   korisnik:{
+        type: mongoose.Schema.Types.ObjectId,
+        require: true,
+        ref: 'User' //sa kojim modelom se povezuje
+   },
    sastojci: [{
        sastojak: {
            type: String,
@@ -30,7 +35,8 @@ const ReceptShema = new mongoose.Schema({
        }
    }],
    slika: {
-    type: Buffer
+        type: Buffer,
+          
     }
 }, {
     //ovo omogucava da vidis kad je sta objavljeno i updejtano

@@ -8,7 +8,15 @@ const ForumObjavaShema = new mongoose.Schema({
         trim: true,
         minlength: 15,
     },
-    
+    korisnik:{
+        type: mongoose.Schema.Types.ObjectId,
+        require: true,
+        ref: 'User' //sa kojim modelom se povezuje
+   },
+   email:{
+       type: String,
+       required: true,
+   }   
 }, {
     timestamps: true
 })

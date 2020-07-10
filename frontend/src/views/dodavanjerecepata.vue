@@ -35,7 +35,7 @@
                     </div>
 
                     <div class="form-group">
-                      <input v-model="sastojci" type="text" placeholder="Sastojci za pripremu"  class="form-control">
+                      <textarea v-model="sastojci" type="text" placeholder="Sastojci za pripremu"  class="form-control" />
                     </div>
 
                     <div class="form-group">
@@ -102,19 +102,18 @@ export default {
   methods: {
     async DodajRecept(){
       this.error = ''
-      this.body.sastojci = this.sastojci.split(',').map((sastojak) =>{
-        return {sastojak}
-      })
       try {
         let form = new FormData()
         form.append('slika', this.slika)
+        form.append('naziv', this.body.naziv)
+        form.append('priprema', this.body.priprema)
+        form.append('vrijemePripreme', this.body.vrijemePripreme)
+        form.append('opis', this.body.opis)
+        form.append('sastojci', this.sastojci)
+        
 
-        let res = await Recept.Objavi(this.body)
-        // this.body = {}
-        console.log("rer", this.slika);
-        console.log(res.data._id);
-        let res2 = await Recept.ObjaviSliku(res.data._id, form)
-        console.log("slika bokte", res2);
+        let res = await Recept.Objavi(form)
+        this.$router.push({name : 'naslovnica'})
       } catch (error) {
         this.error = error.data.error
         console.log(error);

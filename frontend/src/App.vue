@@ -25,24 +25,25 @@ export default {
     Navbar,HelloWorld
   },
   mounted(){ // citamo ucitanje postove s firestorea
-    db.collection("posts").orderBy("posted_at").limit(10)
-      .onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-          const data = change.doc.data()
-          if (change.type !== "added") return
-            const card = {id: change.doc.id, url: data.url, email: data.email, title: this.userEmail, posted_at: data.posted_at}
-            this.kartice.unshift(card)
-        });
-    });
-  
+    
 
   }
 }
 </script>
 
 <style lang="scss">
+:root {
+  --text: #2d4059;
+  --bg: #ffd460;
+  --app-bg: #e2ded3;
+}
+
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  background-image: linear-gradient( #e2ded3,#e2ded3);
+  height: 100vh;
+  overflow: auto;
+  font-family: 'Julius Sans One', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

@@ -1,73 +1,58 @@
 <template>
     <div class="hello">
-   <nav class="navbar custom-nav  navbar-expand-lg navbar-light " style="background-color: #6d6c96;">
+   <nav class="navbar custom-nav  navbar-expand-lg navbar-light"  style="background-color: #6d6c96;">
      <div class="container">
-        <router-link class="navbar-brand" to="/">Naslovnica</router-link>
-        <router-link class="navbar-brand" to="/onama">O nama</router-link>
-        <router-link class="navbar-brand" to="/forum">Forum</router-link>
-        <!-- <router-link v-if="authenticated" class="navbar-brand" to="/recepti">Recepti</router-link> -->
-        <router-link  class="navbar-brand" to="/recepti">Recepti</router-link>
         
-         <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        
+        
+        
+        
+        
+         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
-        </button>  -->
+        </button> 
 
         
         
         
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-          <ul class="navbar-nav mr-auto">
-          </ul>
+        <router-link class="navbar-brand" to="/">Naslovnica</router-link>
+        <router-link v-if="$store.user" class="navbar-brand" to="/dodavanjerecepata">Dodaj recept</router-link>
+        <router-link class="navbar-brand" to="/forum">Forum</router-link>
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Profil
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
 
+          <router-link v-if="$store.user" class="drop-item" :to="{ name: 'profil' }">Podaci profila</router-link>
+          <router-link v-if="$store.user" class="drop-item" :to="{ name: 'recepti' }">Moji recepti</router-link>
+          <router-link v-if="$store.user" class="drop-item" :to="{ name: 'mojeObjave' }">Moje objave</router-link>
+          <router-link v-if="!$store.user" class="drop-item" :to="{ name: 'prijavljivanje' }">Prijava </router-link>
+          <router-link v-if="!$store.user" class="drop-item" :to="{ name: 'registriranje' }">Registracija</router-link>
+          <div v-if="$store.user" @click="logout" class="drop-item">Logout</div>
+        </div>
+      </li>
           <form class="form-inline my-2 my-lg-0">
-            
-           
-           
-     <div class="pretraga">
-         <form class="form-inline my-2 my-lg-0 mr-auto ml-5">
-                  <input v-model="terminalpretrage" class="form-control mr-sm-2" type="search" placeholder="Trazi nesto" aria-label="Search">
-                </form>
-        </div>
-
+            <receptSearchBar v-on:search="test()" v-if="$route.name === 'naslovnica'"/>
+            <forumSearchBar v-if="$route.name === 'forum'"/>
           </form>
-        </div>
-      </div>
-      
-    </nav>
-    <div class="container">
- 
-    
-   
-    <div class="jumbotron jumbotron-fluid">
-  <div class="container">
-    <h1 class="display-2">FOODGET</h1>
-    <router-link class="btn btn-info my-2 my-sm-0 mr-2" to="/dodavanjerecepata">Dodaj recept</router-link>
-    
-     <router-link v-if="!authenticated" class="btn btn-info my-2 my-sm-0 mr-2 btn-lg" to="/prijava">Prijava</router-link> 
-                 <span v-if="authenticated"> 
-                <b>Prijavljeni ste kao :</b>  {{ email }}  <br>
-                {{terminalpretrage}}
-                  <a @click="logout" class="btn btn-info my-2 my-sm-0 mr-2" href="#">Logout</a> 
-                   
-                   <router-link  class="btn btn-info my-2 my-sm-0 mr-2" to="profil">Postavke profila</router-link><br><br>
-                   <router-link class="btn btn-info my-2 my-sm-0 mr-2" to="/dodavanjerecepata">Dodaj recept</router-link>
-                   
-                </span> 
-                
-    
   </div>
-</div>
-    
-  
-</div>
+      </div>
+    </nav>
   </div>
 </template>
 
 <script>
-
+import receptSearchBar from '@/components/receptSearchBar'
+import forumSearchBar from '@/components/forumSearchBar'
 import store from '@/store.js'
 export default {
+  components:{
+    receptSearchBar,
+    forumSearchBar
+  },
     data(){
     return store;
     },
@@ -78,49 +63,17 @@ export default {
   
   methods:{
       logout() {
-      firebase.auth().signOut()
+        this.$store.user = ''
+        this.$store.toekn = ''
+        localStorage.clear()
+        this.$router.push({name: 'prijavljivanje'})
+    },
+    test(){
+      this.$emit("search")
     }
   },
   mounted () {
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        console.log("Korisnik je prijavljen s meilom " + user.email)
-        this.authenticated = true
-        this.email = user.email
-        //redirekcija na home stranicu // naziv home je definiran u routes/index.js
-        if (this.$route.name !== 'naslovnica')
-          this.$router.push({name: 'naslovnica'}).catch(err => console.log(err))
-      }
-      else {
-        console.log("User is not logged in")
-        console.log("Neuspješna lozinka pokusaj te ponovo ili izradite racun")
-        this.authenticated = false
-
-
-        //redirekcija na prijava
-       /*  if (this.$route.name !== 'prijava')
-          this.$router.push({name: 'prijava'}).catch(err => console.log(err)) */
-      }
-    });
-
-     // citanje iz baze al nam ovdje ne treba jer je u app.vue
- /* db.collection("posts").orderBy("posted_at").limit(10).onSnapshot(snapshot => 
-    {  snapshot.docChanges().forEach(change => {  
-        const data = change.doc.data()    
-        
-        if (change.type !== "added") { 
-          // reagiramo samo ako je riječ o dodavanju novog posta    
-            return    }    
-            const card = { // prilagođavamo Firestore post na naš post.    
-              id: change.doc.id, // jedinstveni Firestore id dokumenta     
-               url: data.url,    
-                 email: data.email,   
-                    title: 'Some title', // ne dolazi iz baze, možemo li to popraviti?   
-                       posted_at: data.posted_at    };    
-                       this.kartice.unshift(card); // dodaj na početak Array-a
-                         }); }); */
-   
-
+  
   }
 }
 
@@ -138,11 +91,46 @@ export default {
     .navbar-brand{
       color:azure;
     }
-   }
+  
+}
+@media only screen and (max-width: 992px) {
+  .navbar{
+    height:auto !important;
+  }
+}
 
 .btn3:hover{
   transform: rotate(360deg);
       transition-duration: 1s;
+}
+
+li{
+  text-decoration: none;
+  list-style-type: none;
+  
+}
+
+.nav-link{
+  color: white;
+  font-size: 1.2rem;
+}
+
+.drop-item{
+  display: block;
+  text-decoration: none;
+  color: black;
+  padding-left: 5px;
+  cursor: pointer;
+}
+
+.drop-item:hover{
+  background-color: rgba(172, 0, 0, 0.774);
+  color: white;
+  // transform: scale(1.05, 0);
+}
+
+.navbar{
+  height: 10vh;
 }
 
 </style>

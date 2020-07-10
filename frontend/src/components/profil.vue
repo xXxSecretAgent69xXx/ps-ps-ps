@@ -1,68 +1,89 @@
 <template>
-  <div class="products">
-      <div class="container">
-
-        <div class="">
-            <div class="">
-              <div class="">
-                    <h3>Postavke Profila</h3>
-                 <p>
-                   Promjeni sifru
-                 </p>
-                 <input type="button" @click="resetPassword" value="Posalji na mail" class="btn btn-success ">
-              </div>
-              
-            </div>
-          </div>
-
-
-         
-              </div>
-            </div>
-         
-
+    <div>
+        <div>
+        <H1>Profil</H1></div>
+        <p class="error">{{error}}</p>
+        <div class="container">
+  <div class="row">
+    
+    <div class="col-sm">
+     <form @submit.prevent="updateProfile">
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input v-model="body.email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" disabled>
+    
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">New password</label>
+    <input v-model="body.password" type="password" class="form-control"  placeholder="Password">
+  </div>
+  <div class="form-group">
+    <label for="exampleInputPassword1">Again Password</label>
+    <input v-model="passwordAgain" type="password" class="form-control" placeholder="Again password" autocomplete="new-password">
+  </div>
+  
+  <button type="submit" class="btn btn-primary">Update</button>
+</form>
+    </div>
+    
+  </div>
+</div>
+        
+    </div>
 </template>
 
+
 <script>
-
-
+import User from '@/services/user'
 export default {
-  name: "profil",
-  
-  props: {
-    msg: String
-  },
+    name: 'registriranje',
+    data(){
+      return{
+        body: {},      
+        passwordAgain: "",
+        error: '',
+      }
+    },
+    async created() {
+      await this.getUserData()
+    },
+    methods: {    
+     async updateProfile() { 
+        this.error = ''
+        if(this.body.password != this.passwordAgain) return this.error = "Lozinke nisu iste" 
 
-  data(){
-    return {
-        
-        account:{
-           
-            email:null,
-           
-        } 
-    }
-  },
-  
-  methods:{
-      resetPassword(){
-          const auth = firebase.auth();          
-          auth.sendPasswordResetEmail(auth.currentUser.email).then(() =>  {
-               console.log("Nova sifra je poslana")
-               alert("Nova sifra je poslana")
-          }).catch((error) =>  {
-              console.log(error);
-          });
+        try {
+          let body = {
+            password:  this.body.password
+          }
+          let res = await User.Update(body)
+          console.log(res);
+        } catch (error) {
+          console.log(error);
+          this.error = error.data.error
+        }
       },
-      /*  updateProfile(){
-          this.$firestore.profile.update(this.profile);
-          console.log("uspjesno je azurirano")
-      },  */
-      
-  },
-  
-};
+      async getUserData(){
+        try {
+          let res = await User.Profile()
+          this.body = res.data
+        } catch (error) {
+          console.log(error);
+          this.error = error.data.error
+        }
+      }
+    }
+}
 </script>
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
+
+
+<style scoped>
+.error{
+  color: red;
+}
+
+.row{
+  width: 60%;
+  margin: auto;
+}
 </style>

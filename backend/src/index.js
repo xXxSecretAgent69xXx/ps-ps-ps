@@ -7,6 +7,7 @@ const ReceptRuta = require('./rute/receptRuta');
 const ReceptKomentarRuta = require('./rute/receptKomentarRuta');
 const ForumObjavaRuta = require('./rute/forumObjavaRuta');
 const ForumKomentarRuta = require('./rute/forumKomentarRuta');
+const UserRuta = require('./rute/user');
 
 
 // instanciranje apliakcije
@@ -22,6 +23,7 @@ app.use(ReceptRuta)
 app.use(ReceptKomentarRuta)
 app.use(ForumObjavaRuta)
 app.use(ForumKomentarRuta)
+app.use(UserRuta)
 
 
 app.listen(port, () =>{

@@ -13,6 +13,11 @@ const ReceptKomentarShema = new mongoose.Schema({
         require: true,
         ref: 'Recept' //sa kojim modelom se povezuje
     },
+    korisnik:{
+        type: mongoose.Schema.Types.ObjectId,
+        require: true,
+        ref: 'User' //sa kojim modelom se povezuje
+   },
 }, {
     timestamps: true
 })

@@ -1,68 +1,98 @@
 <template>
   <div class="naslovnica">
+      
+    <slideRecepti />
     <p class="error">{{error}}</p>
-    
-      <div ><!-- PREMJESTIO SAM JE U DODAVANJERECEPATA -->
-         <!-- <form @submit.prevent="postNewImage" class="form-inline mb-5">   
-            <div class="form-group">    
-                <label for="imageUrl">Image URL</label>     
-                 <input v-model="newImageUrl" type="text" class="form-control ml-2" id="imageUrl" placeholder="Enter the image URL">  
-           </div>    
-           <button type="submit" class="btn btn-primary ml-2">Post image</button> 
-            </form>  -->
+      <div class="row recepti">     
+        <div>
+          <karticerecepata class="recept" v-for="k in $store.recepti" :info="k" :key="k._id" /> 
+        </div>  
+      <div v-if="$store.recepti.length>0" class="pag">  
+        <nav aria-label="Page navigation example">
+          <ul class="d-flex pagination justify-content-center">
+            <li @click.prevent="prev()" class="page-item">
+              <a class="page-link" href="#">Previous</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">{{stranica+1}}</a></li>
+            <li @click.prevent="next()" class="page-item">
+              <a class="page-link" href="#">Next</a>
+            </li>
+          </ul>
+        </nav> 
+      </div>   
       </div>
-      <div class="row">     
-       <!-- listanje postova -->
-       <div class="col-12"><karticerecepata class="recept" v-for="k in recepti" :info="k" :key="k._id" /> 
- </div>    
-          
-          <!-- <div class="col-4">      2. stupac NASUMICNI RECEPTI  <karticerecepata v-for="k in recepti" :info="k" :key="k.id" /> </div> 
-          
-
-           <div class="col-4">      3. stupac  S NAJVIŠE KOMENTARA ILI NAJBOLJI  <karticerecepata v-for="k in recepti" :info="k" :key="k.id" /> </div>  -->
-           </div>
-     </div>
+    </div>
   
   
 </template>
 <script>
 import karticerecepata from '@/components/karticerecepata.vue' 
+import slideRecepti from '@/components/slideRecepti.vue' 
 import store from '@/store.js'
 import Recept from '../services/recept'
 
 export default {
   name:"naslovnica",
   components: {
-    karticerecepata
+    karticerecepata,
+    slideRecepti
   },
   data(){
     return{
-      recepti: [],
-      error: ''
+      rndRecepti: [],
+      error: '',
+      stranica: 0,
     }  
   },
   async created() {
-    try {
-      let res = await Recept.SviRecepti()
-      console.log(res);
-      this.recepti = res.data.recepti
-    } catch (error) {
-      this.error = error.data
-    }
+    await this.getAllRecepti()
+    // await this.randomRecepti()
   },
-
-     
+  methods: {
+    async next(){
+      this.stranica++
+      await this.getAllRecepti()      
+    },
+    async prev(){
+      this.stranica = --this.stranica < 0 ? 0 : this.stranica
+      await this.getAllRecepti()
+    },
+    async getAllRecepti(){
+      try {
+        let res = await Recept.SviRecepti(this.$store.receptPretraga, this.stranica, false)
+        this.$store.recepti = res.data.recepti
+      } catch (error) {
+        this.stranica--
+        this.error = error.data
+        console.log(error);
+      }
+    }
+  },     
 }
 </script>
 
-<style lang="css">
+<style lang="css" scoped>
   .recept{
     margin: 0 300px 0 300px;
   }
 
+  .recepti{
+    margin-top: 50px !important;
+  }
+
+  .row{
+    margin: 0px;
+  }
+
+  .pag{
+    width: 100%;
+  }
   .error{
     color: red
   }
+  img{
+  height: 90vh;
+}
 
   @media only screen and (max-width: 991px){
     .recept{
